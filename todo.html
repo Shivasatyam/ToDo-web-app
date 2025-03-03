@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<body>
+  <main>
+    <div class="w-full flex justify-center gap-3 my-10">
+      <input id="inputId" type="text" placeholder="Enter ToDo Task" class="border h-10 w-1/4 px-2">
+      <button class="border w-20 bg-green-400 hover:bg-green-700" onclick="addTask()">Add</button>
+    </div>
+    <div class="todo-container text-center"></div>
+  </main>
+
+  <script>
+    const container = document.querySelector('.todo-container');
+
+    
+    window.onload = function () {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      tasks.forEach(task => createTaskElement(task.text, task.completed));
+    };
+
+    function addTask() {
+      const input = document.getElementById('inputId');
+      const task = input.value.trim();
+      if (task !== '') {
+        createTaskElement(task, false);
+        saveTask(task, false);
+        input.value = '';
+      }
+    }
+
+    function createTaskElement(task, completed) {
+      const taskDiv = document.createElement('div');
+      taskDiv.className = 'flex gap-5 justify-center my-3';
+      taskDiv.innerHTML = `
+        <input type="checkbox" ${completed ? 'checked' : ''} onclick="toggleCompletion(this)">
+        <span class="${completed ? 'line-through' : ''}">${task}</span>
+        <button class="border bg-red-500 hover:bg-red-800" onclick="deleteTask(this)">DELETE</button>
+      `;
+      container.appendChild(taskDiv);
+    }
+
+    function toggleCompletion(checkbox) {
+      const taskText = checkbox.nextElementSibling;
+      taskText.classList.toggle('line-through', checkbox.checked);
+      updateTask(taskText.textContent, checkbox.checked);
+    }
+
+    function deleteTask(button) {
+      const taskDiv = button.parentElement;
+      const taskText = taskDiv.querySelector('span').textContent;
+      taskDiv.remove();
+      removeTask(taskText);
+    }
+
+    function saveTask(text, completed) {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      tasks.push({ text, completed });
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function updateTask(text, completed) {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      const updatedTasks = tasks.map(task => task.text === text ? { text, completed } : task);
+      localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+    }
+
+    function removeTask(text) {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      const updatedTasks = tasks.filter(task => task.text !== text);
+      localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+    }
+  </script>
+</body>
+</html>
